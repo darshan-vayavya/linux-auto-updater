@@ -13,7 +13,7 @@ curl -o installer.sh https://raw.githubusercontent.com/darshan-vayavya/linux-aut
 2. Run the `installer.sh` shell script:
 
 ```bash
-chmod +x install.sh && sudo ./installer.sh
+chmod +x installer.sh && sudo ./installer.sh
 ```
 
 > Optionally, you can specify the time to run the script automatically by passing the argument as:
