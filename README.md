@@ -7,7 +7,7 @@ This repo contains automation to update linux system on a periodic basis. It uti
 1. Get the script:
 
 ```bash
-curl -o installer.sh https://raw.githubusercontent.com/darshan-vayavya/linux-auto-updater/refs/heads/main/installer.sh
+curl -o installer.sh https://raw.githubusercontent.com/darshan-vayavya/linux-auto-updater/refs/heads/main/install.sh
 ```
 
 2. Run the `installer.sh` shell script:
