@@ -44,10 +44,10 @@ echo 'Unknown package manager, cannot update system.' >> ~/update_log.txt
   chmod +x ~/.update_script.sh
 
   # Set up a cron job to run the script at 11 AM every day
-  (
-    crontab -l 2>/dev/null
-    echo "0 $UPDATE_AT * * * /bin/bash ~/.update_script.sh"
-  ) | crontab -
+  crontab -l >cronjobs
+  echo "0 $UPDATE_AT * * * /bin/bash ~/.update_script.sh" >>cronjobs
+  crontab cronjobs
+  rm cronjobs
 
   echo "Auto Updates set to happen at $UPDATE_AT:00 Daily"
 }
