@@ -3,6 +3,33 @@
 UPDATE_AT=11 # Updates at 11 AM, change if needed
 
 # Functions
+# Install cron
+function setup_cron {
+  echo "Checking if cron is installed..."
+
+  if ! command -v cron &>/dev/null; then
+    echo "Cron is not installed. Installing cron..."
+
+    if [ "$1" == "apt" ]; then
+      sudo apt update
+      sudo apt install -y cron
+    elif [ "$1" == "pacman" ]; then
+      sudo pacman -Syu --noconfirm cron
+    elif [ "$1" == "dnf" ]; then
+      sudo dnf install -y cronie
+    else
+      echo "Unable to install cron: unsupported package manager."
+      exit 1
+    fi
+
+    # Start and enable cron service
+    echo "Starting and enabling cron service..."
+    sudo systemctl start cron
+    sudo systemctl enable cron
+  else
+    echo "Cron is already installed."
+  fi
+}
 # Create update script
 function create_update_script {
 
@@ -10,6 +37,7 @@ function create_update_script {
 
   # Choose package manager based on the argument passed
   local package_manager=$1
+  setup_cron "$package_manager"
 
   # Define the update script content based on the package manager
   if [ "$package_manager" == "apt" ]; then
@@ -57,21 +85,18 @@ function debian_based {
   echo "Debian Based System Detected."
   sudo apt update
   #  Install cron
-  sudo apt install -y cron
   create_update_script "apt"
 }
 
 function arch_based {
   echo "Arch Based System Detected"
   #  Install cron
-  sudo pacman -Syu --noconfirm cron
   create_update_script "pacman"
 }
 
 function fedora_based {
   echo "Fedora Based System Detected"
   #  Install cron
-  sudo dnf install -y cronie
   create_update_script "dnf"
 }
 
