@@ -42,42 +42,44 @@ function create_update_script {
   # Define the update script content based on the package manager
   if [ "$package_manager" == "apt" ]; then
     update_script_content="#!/bin/bash
-echo 'Running system updates at $(date)' >> ~/update_log.txt
-sudo apt update >> ~/update_log.txt 2>&1
-sudo apt upgrade -y >> ~/update_log.txt 2>&1
-echo 'Update completed on $(date)' >> ~/update_log.txt
+echo 'Running system updates at \$(date)' >> /var/log/auto_updater
+sudo apt update >> /var/log/auto_updater 2>&1
+sudo apt upgrade -y >> /var/log/auto_updater 2>&1
+echo 'Update completed on \$(date)' >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "pacman" ]; then
     update_script_content="#!/bin/bash
-echo 'Running system updates at $(date)' >> ~/update_log.txt
-sudo pacman -Syu --noconfirm >> ~/update_log.txt 2>&1
-echo 'Update completed on $(date)' >> ~/update_log.txt
+echo 'Running system updates at \$(date)' >> /var/log/auto_updater
+sudo pacman -Syu --noconfirm >> /var/log/auto_updater 2>&1
+echo 'Update completed on \$(date)' >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "dnf" ]; then
     update_script_content="#!/bin/bash
-echo 'Running system updates at $(date)' >> ~/update_log.txt
-sudo dnf update -y >> ~/update_log.txt 2>&1
-echo 'Update completed on $(date)' >> ~/update_log.txt
+echo 'Running system updates at \$(date)' >> /var/log/auto_updater
+sudo dnf update -y >> /var/log/auto_updater 2>&1
+echo 'Update completed on \$(date)' >> /var/log/auto_updater
 "
   else
     update_script_content="#!/bin/bash
-echo 'Unknown package manager, cannot update system.' >> ~/update_log.txt
+echo 'Unknown package manager, cannot update system.' >> /var/log/auto_updater
 "
   fi
 
   # Create a hidden script in the home directory
-  echo "$update_script_content" >~/.update_script.sh
+  echo "$update_script_content" >/usr/local/bin/auto_updater
 
   # Make the script executable
-  chmod +x ~/.update_script.sh
+  chmod +x /usr/local/bin/auto_updater
 
   # Set up a cron job to run the script at 11 AM every day
   crontab -l >cronjobs
-  echo "0 $UPDATE_AT * * * /bin/bash ~/.update_script.sh" >>cronjobs
+  echo "0 $UPDATE_AT * * * /bin/bash /usr/local/bin/auto_updater" >>cronjobs
   crontab cronjobs
   rm cronjobs
 
   echo "Auto Updates set to happen at $UPDATE_AT:00 Daily"
+  echo ""
+  echo "You can find the update log by running cat /var/log/auto_updater"
 }
 
 # Detect Distro
