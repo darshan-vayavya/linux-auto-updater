@@ -42,22 +42,22 @@ function create_update_script {
   # Define the update script content based on the package manager
   if [ "$package_manager" == "apt" ]; then
     update_script_content="#!/bin/bash
-echo 'Running system updates at \$(date)' >> /var/log/auto_updater
+echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
 sudo apt update >> /var/log/auto_updater 2>&1
 sudo apt upgrade -y >> /var/log/auto_updater 2>&1
-echo 'Update completed on \$(date)' >> /var/log/auto_updater
+echo \"Update completed on \$(date)\" >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "pacman" ]; then
     update_script_content="#!/bin/bash
-echo 'Running system updates at \$(date)' >> /var/log/auto_updater
+echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
 sudo pacman -Syu --noconfirm >> /var/log/auto_updater 2>&1
-echo 'Update completed on \$(date)' >> /var/log/auto_updater
+echo \"Update completed on \$(date)\" >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "dnf" ]; then
     update_script_content="#!/bin/bash
-echo 'Running system updates at \$(date)' >> /var/log/auto_updater
+echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
 sudo dnf update -y >> /var/log/auto_updater 2>&1
-echo 'Update completed on \$(date)' >> /var/log/auto_updater
+echo \"Update completed on \$(date)\" >> /var/log/auto_updater
 "
   else
     update_script_content="#!/bin/bash
