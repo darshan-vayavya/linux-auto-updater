@@ -1,7 +1,8 @@
 #!/bin/bash
 VERSION="v1.1"
 # Constant
-UPDATE_AT=11                                                         # Updates at 11 AM, change if needed
+UPDATE_AT=11
+CRON_CMD="/bin/bash /usr/local/bin/auto_updater"                     # Updates at 11 AM, change if needed
 TEMP_DIR="/tmp/auto_updater"                                         # Temp directory to clone the repo
 REPO_URL="https://github.com/darshan-vayavya/linux-auto-updater.git" # Replace with your repository URL
 NOTIFY_TITLE="Update Available"
@@ -104,10 +105,18 @@ $CHECK_FOR_UPDATES_LOGIC
   chmod +x /usr/local/bin/auto_updater
 
   # Set up a cron job to run the script at 11 AM every day
-  crontab -l >cronjobs
-  echo "0 $UPDATE_AT * * * /bin/bash /usr/local/bin/auto_updater" >>cronjobs
-  crontab cronjobs
-  rm cronjobs
+  # Check if the cron job already exists
+  if crontab -l | grep -q "$CRON_CMD"; then
+    # Remove the old cron job
+    crontab -l | grep -v "$CRON_CMD" | crontab -
+    echo "Old cron job removed."
+  fi
+
+  # Add the new cron job with the updated UPDATE_AT value
+  (
+    crontab -l 2>/dev/null
+    echo "0 $UPDATE_AT * * * $CRON_CMD"
+  ) | crontab -
 
   echo "Auto Updates set to happen at $UPDATE_AT:00 Daily"
   echo ""
