@@ -10,10 +10,26 @@ This repo contains automation to update linux system on a periodic basis. It uti
 curl -o installer.sh https://raw.githubusercontent.com/darshan-vayavya/linux-auto-updater/refs/heads/main/install.sh
 ```
 
-2. Run the `installer.sh` shell script:
+2. Verify the signature (Optional - But good practice):
+
+- Get my public key -
 
 ```bash
-chmod +x installer.sh && sudo ./installer.sh && rm -fr ./installer.sh
+gpg --recv-keys EC5FA67D1FC13FEAE955E826C8906CC6629D01D9
+```
+
+- Download the signature file and verify -
+
+```bash
+curl -o installer.sig https://raw.githubusercontent.com/darshan-vayavya/linux-auto-updater/refs/heads/main/install.sh.sig && gpg --verify installer.sig installer.sh
+```
+
+> Ensure that it shows **Good signature from "Darshan (Darshan's Signing Key for Code at Work) <darshanp@vayavyalabs.com>"**
+
+3. Run the `installer.sh` shell script:
+
+```bash
+chmod +x installer.sh && sudo ./installer.sh && rm -f ./installer.sh
 ```
 
 > Optionally, you can specify the time to run the script automatically by passing the argument as:
