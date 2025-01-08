@@ -1,6 +1,30 @@
 #!/bin/bash
+VERSION="v1.1"
 # Constant
-UPDATE_AT=11 # Updates at 11 AM, change if needed
+UPDATE_AT=11                                                         # Updates at 11 AM, change if needed
+TEMP_DIR="/tmp/auto_updater"                                         # Temp directory to clone the repo
+REPO_URL="https://github.com/darshan-vayavya/linux-auto-updater.git" # Replace with your repository URL
+NOTIFY_TITLE="Update Available"
+NOTIFY_MESSAGE="A new version of the auto updater script is available:"
+
+CHECK_FOR_UPDATES_LOGIC="if [ ! -d \"$TEMP_DIR/.git\" ]; then
+    echo \"Cloning repository...\"
+    git clone \"$REPO_URL\" \"$TEMP_DIR\"
+else
+    echo \"Repository already cloned. Updating...\"
+    cd \"$TEMP_DIR\" && git fetch --tags
+fi
+LATEST_TAG=\$(cd \"$TEMP_DIR\" && git tag --list | sort -V | tail -n 1)
+
+# Compare the latest tag with the current version
+if [[ \"\$LATEST_TAG\" != \"\" && \"\$LATEST_TAG\" != \"$VERSION\" ]]; then
+    if [[ $(printf \"%s\n\" \"$VERSION\" \"$LATEST_TAG\" | sort -V | tail -n 1) == \"$LATEST_TAG\" ]]; then
+        # Display a desktop notification with a clickable URL to the repo
+        notify-send \"$NOTIFY_TITLE\" \"$NOTIFY_MESSAGE $LATEST_TAG\nClick to view the repository.\" \
+            -u normal -i info -a \"Update Check\" --hint=int:transient:1 \
+            -t 0 -c \"notification.url=$REPO_URL\"
+    fi
+fi"
 
 # Functions
 # Install cron
@@ -12,11 +36,11 @@ function setup_cron {
 
     if [ "$1" == "apt" ]; then
       sudo apt update
-      sudo apt install -y cron
+      sudo apt install -y git cron libnotify-bin
     elif [ "$1" == "pacman" ]; then
-      sudo pacman -Syu --noconfirm cron
+      sudo pacman -Syu --noconfirm git cronie libnotify
     elif [ "$1" == "dnf" ]; then
-      sudo dnf install -y cronie
+      sudo dnf install -y git cronie libnotify
     else
       echo "Unable to install cron: unsupported package manager."
       exit 1
@@ -42,30 +66,38 @@ function create_update_script {
   # Define the update script content based on the package manager
   if [ "$package_manager" == "apt" ]; then
     update_script_content="#!/bin/bash
+VERSION=\"$VERSION\"
 echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
-sudo apt update >> /var/log/auto_updater 2>&1
+# This part of the code checks for the auto-updater script's updates :)
+$CHECK_FOR_UPDATES_LOGIC
+sudo apt update > /dev/null 2>&1
 sudo apt upgrade -y >> /var/log/auto_updater 2>&1
-echo \"Update completed on \$(date)\" >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "pacman" ]; then
     update_script_content="#!/bin/bash
+VERSION=\"$VERSION\"
 echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
+# This part of the code checks for the auto-updater script's updates :)
+$CHECK_FOR_UPDATES_LOGIC
 sudo pacman -Syu --noconfirm >> /var/log/auto_updater 2>&1
-echo \"Update completed on \$(date)\" >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "dnf" ]; then
     update_script_content="#!/bin/bash
+VERSION=\"$VERSION\"
 echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
+# This part of the code checks for the auto-updater script's updates :)
+$CHECK_FOR_UPDATES_LOGIC
 sudo dnf update -y >> /var/log/auto_updater 2>&1
-echo \"Update completed on \$(date)\" >> /var/log/auto_updater
 "
   else
     update_script_content="#!/bin/bash
+VERSION=\"$VERSION\"
 echo 'Unknown package manager, cannot update system.' >> /var/log/auto_updater
+# This part of the code checks for the auto-updater script's updates :)
+$CHECK_FOR_UPDATES_LOGIC
 "
   fi
 
-  # Create a hidden script in the home directory
   echo "$update_script_content" >/usr/local/bin/auto_updater
 
   # Make the script executable
