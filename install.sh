@@ -47,6 +47,7 @@ function setup_packages {
   sudo systemctl start cron
   sudo systemctl enable cron
 }
+
 # Create update script
 function create_update_script {
 
@@ -173,4 +174,5 @@ fi
 echo -e "\e[1;32mWelcome to Auto-Update Script installer\e[0m"
 
 echo "We will start by detecting which OS the system is on:"
+sleep 5 # Small delay for user to see the message
 detect_distro
