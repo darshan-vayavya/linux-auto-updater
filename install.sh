@@ -28,8 +28,7 @@ if [[ \"\$LATEST_TAG\" != \"\" && \"\$LATEST_TAG\" != \"$VERSION\" ]]; then
 fi"
 
 # Functions
-# Install cron
-function setup_cron {
+function setup_packages {
   echo "Installing required packages"
   if [ "$1" == "apt" ]; then
     sudo apt update >/dev/null 2>&1
@@ -55,7 +54,7 @@ function create_update_script {
 
   # Choose package manager based on the argument passed
   local package_manager=$1
-  setup_cron "$package_manager"
+  setup_packages "$package_manager"
 
   # Define the update script content based on the package manager
   if [ "$package_manager" == "apt" ]; then
