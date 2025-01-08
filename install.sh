@@ -30,30 +30,23 @@ fi"
 # Functions
 # Install cron
 function setup_cron {
-  echo "Checking if cron is installed..."
-
-  if ! command -v cron &>/dev/null; then
-    echo "Cron is not installed. Installing cron..."
-
-    if [ "$1" == "apt" ]; then
-      sudo apt update
-      sudo apt install -y git cron libnotify-bin
-    elif [ "$1" == "pacman" ]; then
-      sudo pacman -Syu --noconfirm git cronie libnotify
-    elif [ "$1" == "dnf" ]; then
-      sudo dnf install -y git cronie libnotify
-    else
-      echo "Unable to install cron: unsupported package manager."
-      exit 1
-    fi
-
-    # Start and enable cron service
-    echo "Starting and enabling cron service..."
-    sudo systemctl start cron
-    sudo systemctl enable cron
+  echo "Installing required packages"
+  if [ "$1" == "apt" ]; then
+    sudo apt update >/dev/null 2>&1
+    sudo apt install -y git cron libnotify-bin
+  elif [ "$1" == "pacman" ]; then
+    sudo pacman -Syu --noconfirm git cronie libnotify
+  elif [ "$1" == "dnf" ]; then
+    sudo dnf install -y git cronie libnotify
   else
-    echo "Cron is already installed."
+    echo "Unable to install cron: unsupported package manager."
+    exit 1
   fi
+
+  # Start and enable cron service
+  echo "Starting and enabling cron service..."
+  sudo systemctl start cron
+  sudo systemctl enable cron
 }
 # Create update script
 function create_update_script {
