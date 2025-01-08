@@ -38,7 +38,7 @@ function setup_packages {
   elif [ "$1" == "dnf" ]; then
     sudo dnf install -y git cronie libnotify
   else
-    echo "Unable to install cron: unsupported package manager."
+    echo "Unable to install required packages: unsupported package manager."
     exit 1
   fi
 
