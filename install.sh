@@ -12,10 +12,9 @@ CHECK_FOR_UPDATES_LOGIC="
 if [ ! -d \"$TEMP_DIR/.git\" ]; then
     echo \"Cloning repository...\"
     git clone \"$REPO_URL\" \"$TEMP_DIR\"
-    git config --global --get-all safe.directory | grep -q "^$TEMP_DIR\\$" || \\
+    git config --global --get-all safe.directory | grep -q \"^$TEMP_DIR\\\$\" || \\
     git config --global --add safe.directory "$TEMP_DIR"
 else
-    echo \"Repository already cloned. Updating...\"
     cd \"$TEMP_DIR\" && git fetch --tags
 fi
 LATEST_TAG=\$(cd \"$TEMP_DIR\" && git tag --list | sort -V | tail -n 1)
