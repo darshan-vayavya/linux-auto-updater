@@ -12,7 +12,7 @@ curl -o installer.sh https://raw.githubusercontent.com/darshan-vayavya/linux-aut
 
 2. Verify the signature (Optional - But good practice):
 
-- Get my public key -
+- Get my public key (if not done before) -
 
 ```bash
 gpg --recv-keys EC5FA67D1FC13FEAE955E826C8906CC6629D01D9
@@ -29,7 +29,7 @@ curl -o installer.sig https://raw.githubusercontent.com/darshan-vayavya/linux-au
 3. Run the `installer.sh` shell script:
 
 ```bash
-chmod +x installer.sh && sudo ./installer.sh && rm -f ./installer.sh
+chmod +x installer.sh && sudo ./installer.sh && rm -f ./installer.sh ./installer.sig
 ```
 
 > Optionally, you can specify the time to run the script automatically by passing the argument as:
