@@ -12,6 +12,8 @@ CHECK_FOR_UPDATES_LOGIC="
 if [ ! -d \"$TEMP_DIR/.git\" ]; then
     echo \"Cloning repository...\"
     git clone \"$REPO_URL\" \"$TEMP_DIR\"
+    git config --global --get-all safe.directory | grep -q "^$TEMP_DIR\\$" || \\
+    git config --global --add safe.directory "$TEMP_DIR"
 else
     echo \"Repository already cloned. Updating...\"
     cd \"$TEMP_DIR\" && git fetch --tags
@@ -121,9 +123,6 @@ $CHECK_FOR_UPDATES_LOGIC
     crontab -l 2>/dev/null
     echo "0 $UPDATE_AT * * * $CRON_CMD"
   ) | crontab -
-
-  # Set the temp directory as safe for git to run on
-  git config --global --add safe.directory /tmp/auto_updater
 
   echo "Auto Updates set to happen at $UPDATE_AT:00 Daily"
   echo ""
