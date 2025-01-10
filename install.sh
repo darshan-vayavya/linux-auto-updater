@@ -1,14 +1,15 @@
 #!/bin/bash
-VERSION="v1.1"
+VER="v1.1"
 # Constant
 UPDATE_AT=11
 CRON_CMD="/bin/bash /usr/local/bin/auto_updater"                     # Updates at 11 AM, change if needed
 TEMP_DIR="/tmp/auto_updater"                                         # Temp directory to clone the repo
-REPO_URL="https://github.com/darshan-vayavya/linux-auto-updater.git" # Replace with your repository URL
-NOTIFY_TITLE="Update Available"
+REPO_URL="https://github.com/darshan-vayavya/linux-auto-updater.git" # Repository URL
+NOTIFY_TITLE="Update Available fo Auto Updater!"
 NOTIFY_MESSAGE="A new version of the auto updater script is available:"
 
-CHECK_FOR_UPDATES_LOGIC="if [ ! -d \"$TEMP_DIR/.git\" ]; then
+CHECK_FOR_UPDATES_LOGIC="
+if [ ! -d \"$TEMP_DIR/.git\" ]; then
     echo \"Cloning repository...\"
     git clone \"$REPO_URL\" \"$TEMP_DIR\"
 else
@@ -18,12 +19,16 @@ fi
 LATEST_TAG=\$(cd \"$TEMP_DIR\" && git tag --list | sort -V | tail -n 1)
 
 # Compare the latest tag with the current version
-if [[ \"\$LATEST_TAG\" != \"\" && \"\$LATEST_TAG\" != \"$VERSION\" ]]; then
-    if [[ $(printf \"%s\n\" \"$VERSION\" \"$LATEST_TAG\" | sort -V | tail -n 1) == \"$LATEST_TAG\" ]]; then
-        # Display a desktop notification with a clickable URL to the repo
-        notify-send \"$NOTIFY_TITLE\" \"$NOTIFY_MESSAGE $LATEST_TAG\nClick to view the repository.\" \
-            -u normal -i info -a \"Update Check\" --hint=int:transient:1 \
-            -t 0 -c \"notification.url=$REPO_URL\"
+if [[ \"\$LATEST_TAG\" != \"\" && \"\$LATEST_TAG\" != \"$VER\" ]]; then
+    if [[ $(printf \"%s\\n\" \"$VER\" \"\$LATEST_TAG\" \| sort -V \| tail -n 1) == \"$LATEST_TAG\" ]]; then
+      # Display a desktop notification with a clickable URL to the repo
+      zenity --info \\
+      --text=\"$NOTIFY_TITLE\\n$NOTIFY_MESSAGE \$LATEST_TAG\\nClick OK to visit the repository.\" --icon-name=info
+      # Check if user clicked OK (exit status 0)
+      if [ \$? -eq 0 ]; then
+          # Open the repository URL in the default browser
+          xdg-open \"$REPO_URL\"
+      fi
     fi
 fi"
 
@@ -32,11 +37,11 @@ function setup_packages {
   echo "Installing required packages"
   if [ "$1" == "apt" ]; then
     sudo apt update >/dev/null 2>&1
-    sudo apt install -y git cron libnotify-bin
+    sudo apt install -y git cron zenity xdg-utils
   elif [ "$1" == "pacman" ]; then
-    sudo pacman -Syu --noconfirm git cronie libnotify
+    sudo pacman -Syu --noconfirm git cronie zenity xdg-utils
   elif [ "$1" == "dnf" ]; then
-    sudo dnf install -y git cronie libnotify
+    sudo dnf install -y git cronie zenity xdg-utils
   else
     echo "Unable to install required packages: unsupported package manager."
     exit 1
@@ -60,7 +65,7 @@ function create_update_script {
   # Define the update script content based on the package manager
   if [ "$package_manager" == "apt" ]; then
     update_script_content="#!/bin/bash
-VERSION=\"$VERSION\"
+VERSION=\"$VER\"
 echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
@@ -69,7 +74,7 @@ sudo apt upgrade -y >> /var/log/auto_updater 2>&1
 "
   elif [ "$package_manager" == "pacman" ]; then
     update_script_content="#!/bin/bash
-VERSION=\"$VERSION\"
+VERSION=\"$VER\"
 echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
@@ -77,7 +82,7 @@ sudo pacman -Syu --noconfirm >> /var/log/auto_updater 2>&1
 "
   elif [ "$package_manager" == "dnf" ]; then
     update_script_content="#!/bin/bash
-VERSION=\"$VERSION\"
+VERSION=\"$VER\"
 echo \"Running system updates at \$(date)\" >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
@@ -85,7 +90,7 @@ sudo dnf update -y >> /var/log/auto_updater 2>&1
 "
   else
     update_script_content="#!/bin/bash
-VERSION=\"$VERSION\"
+VERSION=\"$VER\"
 echo 'Unknown package manager, cannot update system.' >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
@@ -110,6 +115,9 @@ $CHECK_FOR_UPDATES_LOGIC
     crontab -l 2>/dev/null
     echo "0 $UPDATE_AT * * * $CRON_CMD"
   ) | crontab -
+
+  # Set the temp directory as safe for git to run on
+  git config --global --add safe.directory /tmp/auto_updater
 
   echo "Auto Updates set to happen at $UPDATE_AT:00 Daily"
   echo ""
