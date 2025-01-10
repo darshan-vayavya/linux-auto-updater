@@ -13,10 +13,11 @@ if [ ! -d \"$TEMP_DIR/.git\" ]; then
     echo \"Cloning repository...\"
     git clone \"$REPO_URL\" \"$TEMP_DIR\"
     git config --global --get-all safe.directory | grep -q \"^$TEMP_DIR\\\$\" || \\
-    git config --global --add safe.directory "$TEMP_DIR"
+    git config --global --add safe.directory \"$TEMP_DIR\"
 else
     cd \"$TEMP_DIR\" && git fetch --tags
 fi
+
 LATEST_TAG=\$(cd \"$TEMP_DIR\" && git tag --list | sort -V | tail -n 1)
 
 # Compare the latest tag with the current version
