@@ -1,5 +1,5 @@
 #!/bin/bash
-VER="v1.3"
+VER="v1.4"
 # Constant
 UPDATE_AT=11
 CRON_CMD="/bin/bash /usr/local/bin/auto_updater"                     # Updates at 11 AM, change if needed
