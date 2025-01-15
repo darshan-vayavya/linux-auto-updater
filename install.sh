@@ -23,7 +23,8 @@ LATEST_TAG=\$(cd \"$TEMP_DIR\" && git tag --list | sort -V | tail -n 1)
 # Compare the latest tag with the current version
 if [[ \"\$LATEST_TAG\" != \"\" && \"\$LATEST_TAG\" != \"$VER\" ]]; then
     if [[ \$(printf \"%s\\n\" \"$VER\" \"\$LATEST_TAG\" | sort -V | tail -n 1) == \"\$LATEST_TAG\" ]]; then
-      # Display a desktop notification with a clickable URL to the repo
+      echo -e \"\e[0;92m$NOTIFY_TITLE\e[0;m\"
+      # Display a desktop popup with a clickable URL to the repo
       zenity --info \\
       --text=\"$NOTIFY_TITLE\\n$NOTIFY_MESSAGE \$LATEST_TAG\\nClick OK to visit the repository.\" --icon-name=info
       # Check if user clicked OK (exit status 0)
@@ -79,6 +80,7 @@ echo -e \"\\n\\e[0;32mRunning system updates at \$(date)\\e[0m\" >> /var/log/aut
 $CHECK_FOR_UPDATES_LOGIC
 sudo apt update > /dev/null 2>&1
 sudo apt upgrade -y >> /var/log/auto_updater 2>&1
+echo -e \"\\n\\e[0;32mCompleted Running System Updates: \$(date)\\e[0m\" >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "pacman" ]; then
     update_script_content="#!/bin/bash
@@ -87,6 +89,7 @@ echo -e \"\\n\\e[0;32mRunning system updates at \$(date)\\e[0m\" >> /var/log/aut
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
 sudo pacman -Syu --noconfirm >> /var/log/auto_updater 2>&1
+echo -e \"\\n\\e[0;32mCompleted Running System Updates: \$(date)\\e[0m\" >> /var/log/auto_updater
 "
   elif [ "$package_manager" == "dnf" ]; then
     update_script_content="#!/bin/bash
@@ -95,6 +98,7 @@ echo -e \"\\n\\e[0;32mRunning system updates at \$(date)\\e[0m\" >> /var/log/aut
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
 sudo dnf update -y >> /var/log/auto_updater 2>&1
+echo -e \"\\n\\e[0;32mCompleted Running System Updates: \$(date)\\e[0m\" >> /var/log/auto_updater
 "
   else
     update_script_content="#!/bin/bash
