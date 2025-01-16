@@ -33,8 +33,8 @@ chmod +x installer.sh && sudo ./installer.sh && rm -f ./installer.sh ./installer
 ```
 
 > Optionally, you can specify the time to run the script automatically by passing the argument as:
-> ```sudo ./installer.sh 9```
-> *9* means **9 AM**. The Default value is `11 AM`
+> ```sudo ./installer.sh 13```
+> *9* means **1 PM**. The Default value is `11 AM`
 
 ---
 
