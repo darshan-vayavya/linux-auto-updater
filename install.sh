@@ -1,5 +1,5 @@
 #!/bin/bash
-VER="v1.4"
+VER="v1.5"
 # Constant
 UPDATE_AT=11
 CRON_CMD="/bin/bash /usr/local/bin/auto_updater"                     # Updates at 11 AM, change if needed
@@ -7,6 +7,13 @@ TEMP_DIR="/tmp/auto_updater"                                         # Temp dire
 REPO_URL="https://github.com/darshan-vayavya/linux-auto-updater.git" # Repository URL
 NOTIFY_TITLE="Update Available fo Auto Updater ⚙️!"
 NOTIFY_MESSAGE="A new version of the auto updater script is available:"
+
+DISPLAY_SETUP_FOR_DIALOG="
+USER=\$(logname)
+USER_ID=\$(id -u \$USER)
+DISPLAY=\${DISPLAY:-:1}
+xhost local:\$USER > /dev/null
+"
 
 CHECK_FOR_UPDATES_LOGIC="
 if [ ! -d \"$TEMP_DIR/.git\" ]; then
@@ -25,7 +32,7 @@ if [[ \"\$LATEST_TAG\" != \"\" && \"\$LATEST_TAG\" != \"$VER\" ]]; then
     if [[ \$(printf \"%s\\n\" \"$VER\" \"\$LATEST_TAG\" | sort -V | tail -n 1) == \"\$LATEST_TAG\" ]]; then
       echo -e \"\e[0;92m$NOTIFY_TITLE\e[0;m\"
       # Display a desktop popup with a clickable URL to the repo
-      zenity --info \\
+      sudo -u \$USER DISPLAY=\$DISPLAY zenity --info \\
       --text=\"$NOTIFY_TITLE\\n$NOTIFY_MESSAGE \$LATEST_TAG\\nClick OK to visit the repository.\" --icon-name=info
       # Check if user clicked OK (exit status 0)
       if [ \$? -eq 0 ]; then
@@ -75,6 +82,8 @@ function create_update_script {
   if [ "$package_manager" == "apt" ]; then
     update_script_content="#!/bin/bash
 VERSION=\"$VER\"
+# This part lets our script display the popup
+$DISPLAY_SETUP_FOR_DIALOG
 echo -e \"\\n\\e[0;32mRunning system updates at \$(date)\\e[0m\" >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
@@ -85,6 +94,8 @@ echo -e \"\\n\\e[0;32mCompleted Running System Updates: \$(date)\\e[0m\" >> /var
   elif [ "$package_manager" == "pacman" ]; then
     update_script_content="#!/bin/bash
 VERSION=\"$VER\"
+# This part lets our script display the popup
+$DISPLAY_SETUP_FOR_DIALOG
 echo -e \"\\n\\e[0;32mRunning system updates at \$(date)\\e[0m\" >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
@@ -94,6 +105,8 @@ echo -e \"\\n\\e[0;32mCompleted Running System Updates: \$(date)\\e[0m\" >> /var
   elif [ "$package_manager" == "dnf" ]; then
     update_script_content="#!/bin/bash
 VERSION=\"$VER\"
+# This part lets our script display the popup
+$DISPLAY_SETUP_FOR_DIALOG
 echo -e \"\\n\\e[0;32mRunning system updates at \$(date)\\e[0m\" >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
@@ -103,6 +116,8 @@ echo -e \"\\n\\e[0;32mCompleted Running System Updates: \$(date)\\e[0m\" >> /var
   else
     update_script_content="#!/bin/bash
 VERSION=\"$VER\"
+# This part lets our script display the popup
+$DISPLAY_SETUP_FOR_DIALOG
 echo -e '\\n\\e[1;31mUnknown package manager, cannot update system.\\e[0m' >> /var/log/auto_updater
 # This part of the code checks for the auto-updater script's updates :)
 $CHECK_FOR_UPDATES_LOGIC
