@@ -1,5 +1,5 @@
 #!/bin/bash
-VER="v1.5"
+VER="v1.6"
 # Constant
 UPDATE_AT=11
 CRON_CMD="/bin/bash /usr/local/bin/auto_updater"                     # Updates at 11 AM, change if needed
@@ -37,7 +37,8 @@ if [[ \"\$LATEST_TAG\" != \"\" && \"\$LATEST_TAG\" != \"$VER\" ]]; then
       # Check if user clicked OK (exit status 0)
       if [ \$? -eq 0 ]; then
           # Open the repository URL in the default browser
-          xdg-open \"$REPO_URL\"
+	  echo \"Opening Repository\" >> /var/log/auto_updater
+          sudo -u \$USER DISPLAY=\$DISPLAY firefox --new-window \"$REPO_URL\" & disown
       fi
     fi
 fi"
@@ -47,11 +48,12 @@ function setup_packages {
   echo "Installing required packages"
   if [ "$1" == "apt" ]; then
     sudo apt update >/dev/null 2>&1
-    sudo apt install -y git cron zenity xdg-utils
+    sudo apt install -y git cron zenity snapd
+    sudo snap install firefox
   elif [ "$1" == "pacman" ]; then
-    sudo pacman -Syu --noconfirm git cronie zenity xdg-utils
+    sudo pacman -Syu --noconfirm git cronie zenity firefox
   elif [ "$1" == "dnf" ]; then
-    sudo dnf install -y git cronie zenity xdg-utils
+    sudo dnf install -y git cronie zenity firefox
   else
     echo "Unable to install required packages: unsupported package manager."
     exit 1
